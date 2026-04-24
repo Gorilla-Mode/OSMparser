@@ -31,7 +31,5 @@ go.work.sum
 .idea/
 .vscode/
 
-/in/*
-/out/*
-!/in/.gitkeep
-!/out/.gitkeep
+/in/**
+/out/**
