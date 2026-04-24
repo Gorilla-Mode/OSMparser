@@ -117,8 +117,8 @@ func parseNode(elem Element, err error, out *os.File, fileName string, count *in
 	wkt := fmt.Sprintf("POINT(%f %f)", elem.Lon, elem.Lat)
 
 	_, err = out.WriteString(fmt.Sprintf(
-		"INSERT INTO buildings (type, wkt_geom) VALUES (%q, ST_GeomFromText(%q, 4326));\n",
-		fileName, wkt,
+		"INSERT INTO buildings (fid, type, wkt_geom) VALUES (%d, %q, ST_GeomFromText(%q, 4326));\n",
+		elem.ID, fileName, wkt,
 	))
 	if err != nil {
 		return nil, true
