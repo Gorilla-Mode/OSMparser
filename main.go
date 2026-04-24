@@ -30,10 +30,37 @@ const (
 func main() {
 	inDir := "in"
 	outDir := "out"
-
+	inPath, _ := filepath.Abs(inDir)
 	files, err := os.ReadDir(inDir)
 	if err != nil {
 		panic(err)
+	}
+	countFiles := len(files)
+
+	if countFiles == 0 {
+		fmt.Println("No files found in " + inPath)
+		return
+	}
+
+	fmt.Printf("Found %d files in %s\n", countFiles, inPath)
+	fmt.Printf("Staged files:\n")
+	for _, file := range files {
+		if file.IsDir() || !s.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		fmt.Printf("\tFound file: %s\n", file.Name())
+	}
+
+	fmt.Printf("Parse? (y/n):")
+	var i string
+	_, err = fmt.Scan(&i)
+	if err != nil {
+		return
+	}
+
+	if i != "y" {
+		return
 	}
 
 	for _, file := range files {
@@ -98,11 +125,11 @@ func processFile(inDir, outDir, fileName string) {
 				break
 			}
 		case Way:
-			fmt.Printf("Feat not implemented yet: %s\n", elem.Type)
+			//TODO: Implement func
 			break
 
 		case Multi:
-			fmt.Printf("Feat not implemented yet: %s\n", elem.Type)
+			//TODO: Implement func
 			break
 		}
 	}
@@ -111,13 +138,13 @@ func processFile(inDir, outDir, fileName string) {
 	if err != nil {
 		return
 	}
-	fmt.Printf("Parsed file %s, found %d building nodes\n", buildingType, count)
+	fmt.Printf("Parsed file %s, found %d buildings\n", fileName, count)
 }
 
 func parseNode(elem Element, err error, out *os.File, buildingType string, count *int) (error, bool) {
 
 	_, err = out.WriteString(fmt.Sprintf(
-		"INSERT INTO buildings (fid, key, wkt_geom) VALUES (%d::bigint, '%s', point(%f, %f));\n",
+		"INSERT INTO buildings (fid, key, wkt_geom) VALUES (%d::bigint, '%s', point(%f, %f)) ON CONFLICT DO NOTHING;\n",
 		elem.ID, buildingType, elem.Lon, elem.Lat,
 	))
 	if err != nil {
