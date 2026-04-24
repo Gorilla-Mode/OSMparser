@@ -115,11 +115,10 @@ func processFile(inDir, outDir, fileName string) {
 }
 
 func parseNode(elem Element, err error, out *os.File, buildingType string, count *int) (error, bool) {
-	wkt := fmt.Sprintf("POINT(%f %f)", elem.Lon, elem.Lat)
 
 	_, err = out.WriteString(fmt.Sprintf(
-		"INSERT INTO buildings (fid, type, wkt_geom) VALUES (%d, %q, ST_GeomFromText(%q, 4326));\n",
-		elem.ID, buildingType, wkt,
+		"INSERT INTO buildings (fid, key, wkt_geom) VALUES (%d::bigint, '%s', point(%f, %f));\n",
+		elem.ID, buildingType, elem.Lon, elem.Lat,
 	))
 	if err != nil {
 		return nil, true
