@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	s "strings"
+	t "time"
 )
 
 type Element struct {
@@ -63,16 +64,21 @@ func main() {
 		return
 	}
 
+	start := t.Now()
 	for _, file := range files {
 		if file.IsDir() || !s.HasSuffix(file.Name(), ".json") {
 			continue
 		}
 
-		processFile(inDir, outDir, file.Name())
+		processFiles(inDir, outDir, file.Name())
 	}
+	end := t.Now()
+	elapsed := end.Sub(start)
+	fmt.Printf("Parsed %d files in %s\n", countFiles, elapsed)
 }
 
-func processFile(inDir, outDir, fileName string) {
+func processFiles(inDir, outDir, fileName string) {
+	start := t.Now()
 	data, err := os.ReadFile(inDir + "/" + fileName)
 	if err != nil {
 		fmt.Printf("Error reading %s: %v\n", fileName, err)
@@ -138,7 +144,10 @@ func processFile(inDir, outDir, fileName string) {
 	if err != nil {
 		return
 	}
-	fmt.Printf("Parsed file %s, found %d buildings\n", fileName, count)
+
+	end := t.Now()
+	elapsed := end.Sub(start)
+	fmt.Printf("\tParsed file %s in %s\n\t\t-> found %d buildings\n", fileName, elapsed, count)
 }
 
 func parseNode(elem Element, err error, out *os.File, buildingType string, count *int) (error, bool) {
