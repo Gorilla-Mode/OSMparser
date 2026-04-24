@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	s "strings"
 )
 
 type Element struct {
@@ -37,7 +37,7 @@ func main() {
 	}
 
 	for _, file := range files {
-		if file.IsDir() || !strings.HasSuffix(file.Name(), ".json") {
+		if file.IsDir() || !s.HasSuffix(file.Name(), ".json") {
 			continue
 		}
 
@@ -66,7 +66,7 @@ func processFile(inDir, outDir, fileName string) {
 		return
 	}
 
-	outFileName := strings.TrimSuffix(fileName, ".json") + ".sql"
+	outFileName := s.TrimSuffix(fileName, ".json") + ".sql"
 	out, err := os.Create(filepath.Join(outDir, outFileName))
 	if err != nil {
 		fmt.Printf("Error creating %s: %v\n", outFileName, err)
@@ -84,6 +84,7 @@ func processFile(inDir, outDir, fileName string) {
 		return
 	}
 	count := 0
+	buildingType := s.TrimSuffix(fileName, ".json")
 
 	for _, elem := range osm.Elements {
 		if elem.Tags == nil {
@@ -92,7 +93,7 @@ func processFile(inDir, outDir, fileName string) {
 
 		switch elem.Type {
 		case Node:
-			_, done := parseNode(elem, err, out, fileName, &count)
+			_, done := parseNode(elem, err, out, buildingType, &count)
 			if done {
 				break
 			}
@@ -110,15 +111,15 @@ func processFile(inDir, outDir, fileName string) {
 	if err != nil {
 		return
 	}
-	fmt.Printf("Parsed file %s, found %d building nodes\n", fileName, count)
+	fmt.Printf("Parsed file %s, found %d building nodes\n", buildingType, count)
 }
 
-func parseNode(elem Element, err error, out *os.File, fileName string, count *int) (error, bool) {
+func parseNode(elem Element, err error, out *os.File, buildingType string, count *int) (error, bool) {
 	wkt := fmt.Sprintf("POINT(%f %f)", elem.Lon, elem.Lat)
 
 	_, err = out.WriteString(fmt.Sprintf(
 		"INSERT INTO buildings (fid, type, wkt_geom) VALUES (%d, %q, ST_GeomFromText(%q, 4326));\n",
-		elem.ID, fileName, wkt,
+		elem.ID, buildingType, wkt,
 	))
 	if err != nil {
 		return nil, true
