@@ -10,12 +10,28 @@ import (
 	t "time"
 )
 
+type Coordinate struct {
+	Lat float64 `json:"lat"`
+	Lon float64 `json:"lon"`
+}
+
+type Bounds struct {
+	MinLat float64 `json:"minlat"`
+	MinLon float64 `json:"minlon"`
+	MaxLat float64 `json:"maxlat"`
+	MaxLon float64 `json:"maxlon"`
+}
+
 type Element struct {
 	Type string            `json:"type"`
 	ID   int64             `json:"id"`
 	Lat  float64           `json:"lat"`
 	Lon  float64           `json:"lon"`
 	Tags map[string]string `json:"tags"`
+	// Way-specific fields
+	Bounds   *Bounds      `json:"bounds,omitempty"`
+	Nodes    []int64      `json:"nodes,omitempty"`
+	Geometry []Coordinate `json:"geometry,omitempty"`
 }
 
 type OSMData struct {
@@ -116,8 +132,10 @@ func processFiles(inDir, outDir, fileName string) {
 	if err != nil {
 		return
 	}
-	count := 0
 	buildingType := s.TrimSuffix(fileName, ".json")
+	countNode := 0
+	countWay := 0
+	countMulti := 0
 
 	for _, elem := range osm.Elements {
 		if elem.Tags == nil {
@@ -126,14 +144,15 @@ func processFiles(inDir, outDir, fileName string) {
 
 		switch elem.Type {
 		case Node:
-			_, done := parseNode(elem, err, out, buildingType, &count)
+			_, done := parseNode(elem, err, out, buildingType, &countNode)
 			if done {
 				break
 			}
 		case Way:
-			//TODO: Implement func
-			break
-
+			_, done := parseWay(elem, err, out, buildingType, &countWay)
+			if done {
+				break
+			}
 		case Multi:
 			//TODO: Implement func
 			break
@@ -147,7 +166,8 @@ func processFiles(inDir, outDir, fileName string) {
 
 	end := t.Now()
 	elapsed := end.Sub(start)
-	fmt.Printf("\tParsed file %s in %s\n\t\t-> found %d buildings\n", fileName, elapsed, count)
+	fmt.Printf("\tParsed file %s in %s\n\t\t-> nodes: %d\n\t\t-> way(s): %d\n\t\t-> multipolygon(s): %d\n",
+		fileName, elapsed, countNode, countWay, countMulti)
 }
 
 func parseNode(elem Element, err error, out *os.File, buildingType string, count *int) (error, bool) {
@@ -161,4 +181,38 @@ func parseNode(elem Element, err error, out *os.File, buildingType string, count
 	}
 	*count++
 	return err, false
+}
+
+func parseWay(elem Element, err error, out *os.File, buildingType string, count *int) (error, bool) {
+	if len(elem.Geometry) == 0 {
+		return nil, true
+	}
+
+	centerLat, centerLon := calculateCentroid(elem.Geometry)
+
+	_, err = out.WriteString(fmt.Sprintf(
+		"INSERT INTO buildings (fid, key, wkt_geom) VALUES (%d::bigint, '%s', point(%f, %f)) ON CONFLICT DO NOTHING;\n",
+		elem.ID, buildingType, centerLon, centerLat,
+	))
+	if err != nil {
+		return nil, true
+	}
+	*count++
+	return err, false
+}
+
+func calculateCentroid(geometry []Coordinate) (lat, lon float64) {
+	if len(geometry) == 0 {
+		return 0, 0
+	}
+
+	for _, coord := range geometry {
+		lat += coord.Lat
+		lon += coord.Lon
+	}
+
+	lat /= float64(len(geometry))
+	lon /= float64(len(geometry))
+
+	return lat, lon
 }
