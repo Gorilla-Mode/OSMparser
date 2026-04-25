@@ -21,7 +21,7 @@ The name of the file will be the "type" value in the parsed SQL file.
 
 #### Ouput example
 ```sql
-INSERT INTO buildings (fid, key, wkt_geom) VALUES (1::bigint, 'myballs', point(1.0, 2.0)) ON CONFLICT DO NOTHING;
+INSERT INTO t (fid, key, wkt_geom) VALUES (1::bigint, 'myballs', point(1.0, 2.0)) ON CONFLICT DO NOTHING;
 ```
 
 ## Geometries
