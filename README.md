@@ -1,23 +1,34 @@
 # OSMparser
 Parses OSM JSON to postGIS point geometries
 
-## 1. Usage
+## Usage
 1. Drop JSON files into `./in`
 2. Compile and run `main.go`'
 3. Parsed SQL files will be in `./out`
 
-## 2. Exceptions
-### 1. Table format
-Parser expects a table with the following columns:
-
-| fid     | type | wkt_geom |
-|---------|------|----------|
-| bingint | text | point    |
-
-### 3. Input
+##  Exceptions
+###  Input
 - OSM JSON file
 
 The name of the file will be the "type" value in the parsed SQL file.
 
-### 4, Output
-- PostGIS 
+### Output format
+
+| **Output**       | **id**                | **type**                                            | **geom**      |
+|------------------|-----------------------|-----------------------------------------------------|---------------|
+| **Description**  | ID from OSM JSON file | From filename. e.g `chemist.json` returns `chemist` | PostGIS point |
+| **Default name** | fid                   | key                                                 | wkt_geom      |
+
+#### Ouput example
+```sql
+INSERT INTO buildings (fid, key, wkt_geom) VALUES (1::bigint, 'myballs', point(1.0, 2.0)) ON CONFLICT DO NOTHING;
+```
+
+## Geometries
+ ### Support
+ - [x] Nodes
+ - [x] Ways
+ - [ ] Multipolygons
+
+> [!IMPORTANT]  
+> Geometry returned for a way is the centroid of the way.
