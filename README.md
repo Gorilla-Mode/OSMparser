@@ -26,10 +26,12 @@ INSERT INTO t (fid, key, wkt_geom) VALUES (1::bigint, 'myballs', point(1.0, 2.0)
 ```
 
 ## Geometries
+
+> [!IMPORTANT]  
+> Geometry returned for a way is the centroid of the way.
+
  ### Support
  - [x] Nodes
  - [x] Ways
  - [ ] Multipolygons
 
-> [!IMPORTANT]  
-> Geometry returned for a way is the centroid of the way.
