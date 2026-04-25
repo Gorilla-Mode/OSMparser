@@ -44,6 +44,24 @@ const (
 	Multi        = "multipolygon"
 )
 
+type (
+	colsNames struct {
+		id    string
+		btype string
+		geom  string
+	}
+)
+
+func newColsNames(id string, btype string, geom string) *colsNames {
+	return &colsNames{
+		id:    id,
+		btype: btype,
+		geom:  geom,
+	}
+}
+
+var Cols = newColsNames("fid", "key", "wkt_geom")
+
 func main() {
 	inDir := "in"
 	outDir := "out"
@@ -69,7 +87,7 @@ func main() {
 		fmt.Printf("\tFound file: %s\n", file.Name())
 	}
 
-	fmt.Printf("Parse? (y/n):")
+	fmt.Printf("Parse? (y):")
 	var i string
 	_, err = fmt.Scan(&i)
 	if err != nil {
@@ -78,6 +96,16 @@ func main() {
 
 	if i != "y" {
 		return
+	}
+
+	fmt.Printf("Default cols? (y):")
+	_, err = fmt.Scan(&i)
+	if err != nil {
+		return
+	}
+
+	if i != "y" {
+		setColsNames()
 	}
 
 	start := t.Now()
@@ -173,8 +201,8 @@ func processFiles(inDir, outDir, fileName string) {
 func parseNode(elem Element, err error, out *os.File, buildingType string, count *int) (error, bool) {
 
 	_, err = out.WriteString(fmt.Sprintf(
-		"INSERT INTO buildings (fid, key, wkt_geom) VALUES (%d::bigint, '%s', point(%f, %f)) ON CONFLICT DO NOTHING;\n",
-		elem.ID, buildingType, elem.Lon, elem.Lat,
+		"INSERT INTO buildings (%s, %s, %s) VALUES (%d::bigint, '%s', point(%f, %f)) ON CONFLICT DO NOTHING;\n",
+		Cols.id, Cols.btype, Cols.geom, elem.ID, buildingType, elem.Lon, elem.Lat,
 	))
 	if err != nil {
 		return nil, true
@@ -191,8 +219,8 @@ func parseWay(elem Element, err error, out *os.File, buildingType string, count 
 	centerLat, centerLon := calculateCentroid(elem.Geometry)
 
 	_, err = out.WriteString(fmt.Sprintf(
-		"INSERT INTO buildings (fid, key, wkt_geom) VALUES (%d::bigint, '%s', point(%f, %f)) ON CONFLICT DO NOTHING;\n",
-		elem.ID, buildingType, centerLon, centerLat,
+		"INSERT INTO buildings (%s, %s, %s) VALUES (%d::bigint, '%s', point(%f, %f)) ON CONFLICT DO NOTHING;\n",
+		Cols.id, Cols.btype, Cols.geom, elem.ID, buildingType, centerLon, centerLat,
 	))
 	if err != nil {
 		return nil, true
@@ -215,4 +243,31 @@ func calculateCentroid(geometry []Coordinate) (lat, lon float64) {
 	lon /= float64(len(geometry))
 
 	return lat, lon
+}
+
+func setColsNames() {
+	fmt.Println("Set identity:")
+	var id string
+	_, err := fmt.Scan(&id)
+	if err != nil {
+		return
+	}
+
+	fmt.Println("Set building type:")
+	var btype string
+	_, err = fmt.Scan(&btype)
+	if err != nil {
+		return
+	}
+
+	fmt.Println("Set geometry column name:")
+	var geom string
+	_, err = fmt.Scan(&geom)
+	if err != nil {
+		return
+	}
+
+	Cols.id = id
+	Cols.btype = btype
+	Cols.geom = geom
 }
