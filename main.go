@@ -28,7 +28,7 @@ type Element struct {
 	Lat  float64           `json:"lat"`
 	Lon  float64           `json:"lon"`
 	Tags map[string]string `json:"tags"`
-	// Way-specific fields
+
 	Bounds   *Bounds      `json:"bounds,omitempty"`
 	Nodes    []int64      `json:"nodes,omitempty"`
 	Geometry []Coordinate `json:"geometry,omitempty"`
@@ -41,17 +41,15 @@ type OSMData struct {
 const (
 	Node  string = "node"
 	Way          = "way"
-	Multi        = "multipolygon"
+	Multi        = "relation"
 )
 
-type (
-	tableDefinition struct {
-		id    string
-		btype string
-		geom  string
-		table string
-	}
-)
+type tableDefinition struct {
+	id    string
+	btype string
+	geom  string
+	table string
+}
 
 func newColsNames(id string, btype string, geom string, table string) *tableDefinition {
 	return &tableDefinition{
@@ -184,8 +182,10 @@ func processFiles(inDir, outDir, fileName string) {
 				break
 			}
 		case Multi:
-			//TODO: Implement func
-			break
+			_, done := parseRelation(elem, err, out, buildingType, &countMulti)
+			if done {
+				break
+			}
 		}
 	}
 
@@ -219,6 +219,30 @@ func parseWay(elem Element, err error, out *os.File, buildingType string, count 
 	}
 
 	centerLat, centerLon := calculateCentroid(elem.Geometry)
+
+	_, err = out.WriteString(fmt.Sprintf(
+		"INSERT INTO buildings (%s, %s, %s) VALUES (%d::bigint, '%s', point(%f, %f)) ON CONFLICT DO NOTHING;\n",
+		Cols.id, Cols.btype, Cols.geom, elem.ID, buildingType, centerLon, centerLat,
+	))
+	if err != nil {
+		return nil, true
+	}
+	*count++
+	return err, false
+}
+
+func parseRelation(elem Element, err error, out *os.File, buildingType string, count *int) (error, bool) {
+	if elem.Bounds == nil {
+		return nil, true
+	}
+
+	// Create coordinate array from bounds corners
+	geometry := []Coordinate{
+		{Lat: elem.Bounds.MinLat, Lon: elem.Bounds.MinLon},
+		{Lat: elem.Bounds.MaxLat, Lon: elem.Bounds.MaxLon},
+	}
+
+	centerLat, centerLon := calculateCentroid(geometry)
 
 	_, err = out.WriteString(fmt.Sprintf(
 		"INSERT INTO buildings (%s, %s, %s) VALUES (%d::bigint, '%s', point(%f, %f)) ON CONFLICT DO NOTHING;\n",
