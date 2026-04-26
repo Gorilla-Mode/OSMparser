@@ -25,7 +25,7 @@ func main() {
 
 	fmt.Printf("Parse? (y):")
 	var i string
-	_, err = fmt.Scan(&i)
+	_, err = fmt.Scanln(&i)
 	if err != nil {
 		return
 	}
@@ -35,7 +35,7 @@ func main() {
 	}
 
 	fmt.Printf("Default cols? (y):")
-	_, err = fmt.Scan(&i)
+	_, err = fmt.Scanln(&i)
 	if err != nil {
 		return
 	}
@@ -76,4 +76,6 @@ func main() {
 
 	printResults(parsedResults)
 	fmt.Printf("%sParsed %d files in %s%s\n", ansi[Green], countFiles, elapsed, ansi[Reset])
+	fmt.Printf("Press Enter to exit...")
+	waitForAnyKey()
 }

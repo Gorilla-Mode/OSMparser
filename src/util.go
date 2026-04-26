@@ -1,6 +1,7 @@
 ﻿package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	s "strings"
@@ -80,4 +81,10 @@ func printFiles(countFiles int, inPath string, files []os.DirEntry) {
 		}
 
 	}
+}
+
+func waitForAnyKey() {
+
+	reader := bufio.NewReader(os.Stdin)
+	_, _ = reader.ReadString('\n')
 }
