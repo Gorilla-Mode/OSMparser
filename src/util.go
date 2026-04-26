@@ -1,5 +1,7 @@
 ﻿package main
 
+import "fmt"
+
 const (
 	Reset = iota
 	Red
@@ -38,4 +40,18 @@ func calculateCentroid(geometry []Coordinate) (lat, lon float64) {
 	lon /= float64(len(geometry))
 
 	return lat, lon
+}
+
+func printResults(results []ParseResult) {
+	for i, result := range results {
+		prefix := "├─"
+		connector := "│\t"
+		if i == len(results)-1 {
+			prefix = "└─"
+			connector = "\t"
+		}
+		fmt.Printf("\t%s Parsed file %s in %s\n\t%s├── nodes: %s%d%s\n\t%s├── way(s): %s%d%s\n\t%s└── multipolygon(s): %s%d%s\n",
+			prefix, result.fileName, result.elapsed, connector, ansi[Green], result.nodes, ansi[Reset],
+			connector, ansi[Green], result.ways, ansi[Reset], connector, ansi[Green], result.multipolygons, ansi[Reset])
+	}
 }
