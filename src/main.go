@@ -46,9 +46,9 @@ func main() {
 
 	fmt.Printf("\nParsing %d files...\n", countFiles)
 
-	results := make([]ParseResult, 0, countFiles)
-	var mu sync.Mutex
+	results := make(chan ParseResult, countFiles)
 	var wg sync.WaitGroup
+	var elapsed t.Duration
 
 	start := t.Now()
 	for _, file := range files {
@@ -60,15 +60,20 @@ func main() {
 		go func(f os.DirEntry) {
 			defer wg.Done()
 			result := parseFile(inDir, outDir, f.Name())
-			mu.Lock()
-			results = append(results, result)
-			mu.Unlock()
+			results <- result
 		}(file)
 	}
-	wg.Wait()
-	end := t.Now()
-	elapsed := end.Sub(start)
+	go func() {
+		wg.Wait()
+		elapsed = t.Now().Sub(start)
+		close(results)
+	}()
 
-	printResults(results)
+	parsedResults := make([]ParseResult, 0, countFiles)
+	for result := range results {
+		parsedResults = append(parsedResults, result)
+	}
+
+	printResults(parsedResults)
 	fmt.Printf("%sParsed %d files in %s%s\n", ansi[Green], countFiles, elapsed, ansi[Reset])
 }
