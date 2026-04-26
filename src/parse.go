@@ -117,11 +117,15 @@ func parseFile(inDir, outDir, fileName string, isLast bool) {
 	end := t.Now()
 	elapsed := end.Sub(start)
 	if !isLast {
-		fmt.Printf("\t├─┬─ Parsed file %s in %s\n\t│ └─┬── nodes: %d\n\t│   ├── way(s): %d\n\t│   └── multipolygon(s): %d\n",
-			fileName, elapsed, countNode, countWay, countMulti)
+		fmt.Printf("\t├─┬─ Parsed file %s in %s\n\t│ └─┬── nodes: %s%d%s\n\t│   ├── way(s): %s%d%s\n\t"+
+			"│   └── multipolygon(s): %s%d%s\n",
+			fileName, elapsed, ansi[Green], countNode, ansi[Reset], ansi[Green], countWay, ansi[Reset], ansi[Green],
+			countMulti, ansi[Reset])
 	} else {
-		fmt.Printf("\t└─┬─ Parsed file %s in %s\n\t  └─┬── nodes: %d\n\t    ├── way(s): %d\n\t    └── multipolygon(s): %d\n",
-			fileName, elapsed, countNode, countWay, countMulti)
+		fmt.Printf("\t└─┬─ Parsed file %s in %s\n\t  └─┬── nodes: %s%d%s\n\t    ├── way(s): %s%d%s\n\t"+
+			"    └── multipolygon(s): %s%d%s\n\n",
+			fileName, elapsed, ansi[Green], countNode, ansi[Reset], ansi[Green], countWay, ansi[Reset], ansi[Green],
+			countMulti, ansi[Reset])
 	}
 }
 

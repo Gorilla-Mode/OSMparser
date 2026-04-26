@@ -60,7 +60,7 @@ func main() {
 		setColsNames()
 	}
 
-	fmt.Printf("Parsing %d files...\n", countFiles)
+	fmt.Printf("\nParsing %d files...\n", countFiles)
 	start := t.Now()
 	for _, file := range files {
 		if file.IsDir() || !s.HasSuffix(file.Name(), ".json") {
@@ -72,5 +72,5 @@ func main() {
 	}
 	end := t.Now()
 	elapsed := end.Sub(start)
-	fmt.Printf("Parsed %d files in %s\n", countFiles, elapsed)
+	fmt.Printf("%sParsed %d files in %s%s\n", ansi[Green], countFiles, elapsed, ansi[Reset])
 }
