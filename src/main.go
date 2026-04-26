@@ -21,7 +21,7 @@ func main() {
 	countFiles := len(files)
 
 	if countFiles == 0 {
-		fmt.Println("No files found in " + inPath)
+		fmt.Println("No files found in: " + inPath)
 		return
 	}
 
@@ -31,8 +31,12 @@ func main() {
 		if file.IsDir() || !s.HasSuffix(file.Name(), ".json") {
 			continue
 		}
+		if files[countFiles-1] != file {
+			fmt.Printf("\t├─ Found file: %s\n", file.Name())
+		} else {
+			fmt.Printf("\t└─ Found file: %s\n", file.Name())
+		}
 
-		fmt.Printf("\tFound file: %s\n", file.Name())
 	}
 
 	fmt.Printf("Parse? (y):")
@@ -56,13 +60,15 @@ func main() {
 		setColsNames()
 	}
 
+	fmt.Printf("Parsing %d files...\n", countFiles)
 	start := t.Now()
 	for _, file := range files {
 		if file.IsDir() || !s.HasSuffix(file.Name(), ".json") {
 			continue
 		}
+		lastFile := file.Name() == files[countFiles-1].Name()
 
-		parseFiles(inDir, outDir, file.Name())
+		parseFile(inDir, outDir, file.Name(), lastFile)
 	}
 	end := t.Now()
 	elapsed := end.Sub(start)
