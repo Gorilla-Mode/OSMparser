@@ -1,12 +1,24 @@
 # OSMparser
 Parses OSM JSON to postGIS point geometries
 
+## Geometries
+
+> [!IMPORTANT]  
+> Geometry returned for a way is the centroid of the way.
+>
+> Geometry returned for a relation is the centroid of its bounds.
+
+### Support
+- [x] Nodes
+- [x] Ways
+- [x] Relations
+
 ## Usage
 1. Drop JSON files into `./in`
 2. Compile and run `main.go`'
 3. Parsed SQL files will be in `./out`
 
-##  Exceptions
+## Expectations
 ###  Input
 - OSM JSON file
 
@@ -24,16 +36,3 @@ The name of the file will be the "type" value in the parsed SQL file.
 ```sql
 INSERT INTO t (fid, key, wkt_geom) VALUES (1::bigint, 'myballs', point(1.0, 2.0)) ON CONFLICT DO NOTHING;
 ```
-
-## Geometries
-
-> [!IMPORTANT]  
-> Geometry returned for a way is the centroid of the way.
-> 
-> Geometry returned for a relation is the centroid of its bounds.
-
- ### Support
- - [x] Nodes
- - [x] Ways
- - [x] Relations
-
