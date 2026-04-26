@@ -45,8 +45,7 @@ func parseRelation(elem Element, err error, out *os.File, buildingType string, c
 	if elem.Bounds == nil {
 		return nil, true
 	}
-
-	// Create coordinate array from bounds corners
+	
 	geometry := []Coordinate{
 		{Lat: elem.Bounds.MinLat, Lon: elem.Bounds.MinLon},
 		{Lat: elem.Bounds.MaxLat, Lon: elem.Bounds.MaxLon},
@@ -96,7 +95,6 @@ func parseFiles(inDir, outDir, fileName string) {
 	defer func(out *os.File) {
 		err := out.Close()
 		if err != nil {
-
 		}
 	}(out)
 
@@ -109,29 +107,7 @@ func parseFiles(inDir, outDir, fileName string) {
 	countWay := 0
 	countMulti := 0
 
-	for _, elem := range osm.Elements {
-		if elem.Tags == nil {
-			continue
-		}
-
-		switch elem.Type {
-		case Node:
-			_, done := parseNode(elem, err, out, buildingType, &countNode)
-			if done {
-				break
-			}
-		case Way:
-			_, done := parseWay(elem, err, out, buildingType, &countWay)
-			if done {
-				break
-			}
-		case Multi:
-			_, done := parseRelation(elem, err, out, buildingType, &countMulti)
-			if done {
-				break
-			}
-		}
-	}
+	delegateParser(osm, err, out, buildingType, &countNode, &countWay, &countMulti)
 
 	_, err = out.WriteString("COMMIT;\n")
 	if err != nil {
@@ -142,4 +118,30 @@ func parseFiles(inDir, outDir, fileName string) {
 	elapsed := end.Sub(start)
 	fmt.Printf("\tParsed file %s in %s\n\t\t-> nodes: %d\n\t\t-> way(s): %d\n\t\t-> multipolygon(s): %d\n",
 		fileName, elapsed, countNode, countWay, countMulti)
+}
+
+func delegateParser(osm OSMData, err error, out *os.File, buildingType string, countNode *int, countWay *int, countMulti *int) {
+	for _, elem := range osm.Elements {
+		if elem.Tags == nil {
+			continue
+		}
+
+		switch elem.Type {
+		case Node:
+			_, done := parseNode(elem, err, out, buildingType, countNode)
+			if done {
+				break
+			}
+		case Way:
+			_, done := parseWay(elem, err, out, buildingType, countWay)
+			if done {
+				break
+			}
+		case Multi:
+			_, done := parseRelation(elem, err, out, buildingType, countMulti)
+			if done {
+				break
+			}
+		}
+	}
 }
