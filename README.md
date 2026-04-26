@@ -29,9 +29,11 @@ INSERT INTO t (fid, key, wkt_geom) VALUES (1::bigint, 'myballs', point(1.0, 2.0)
 
 > [!IMPORTANT]  
 > Geometry returned for a way is the centroid of the way.
+> 
+> Geometry returned for a relation is the centroid of its bounds.
 
  ### Support
  - [x] Nodes
  - [x] Ways
- - [ ] Multipolygons
+ - [x] Relations
 
