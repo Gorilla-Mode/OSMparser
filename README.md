@@ -1,5 +1,5 @@
 # OSMparser
-Parses OSM JSON to postGIS point geometries
+Simple threaded OSM JSON to postGIS SQL parser.
 
 ## Geometries
 
