@@ -1,6 +1,10 @@
 ﻿package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	s "strings"
+)
 
 const (
 	Reset = iota
@@ -53,5 +57,27 @@ func printResults(results []ParseResult) {
 		fmt.Printf("\t%s Parsed file %s in %s\n\t%s├── nodes: %s%d%s\n\t%s├── way(s): %s%d%s\n\t%s└── multipolygon(s): %s%d%s\n",
 			prefix, result.fileName, result.elapsed, connector, ansi[Green], result.nodes, ansi[Reset],
 			connector, ansi[Green], result.ways, ansi[Reset], connector, ansi[Green], result.multipolygons, ansi[Reset])
+	}
+}
+
+func printFiles(countFiles int, inPath string, files []os.DirEntry) {
+	if countFiles == 0 {
+		fmt.Println("No files found in: " + inPath)
+		return
+	}
+
+	fmt.Printf("Found %d files in %s\n", countFiles, inPath)
+	fmt.Printf("Staged files:\n")
+
+	for _, file := range files {
+		if file.IsDir() || !s.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+		if files[countFiles-1] != file {
+			fmt.Printf("\t├─ Found file: %s\n", file.Name())
+		} else {
+			fmt.Printf("\t└─ Found file: %s\n", file.Name())
+		}
+
 	}
 }
