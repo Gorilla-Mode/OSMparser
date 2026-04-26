@@ -11,11 +11,11 @@ import (
 )
 
 type ParseResult struct {
-	fileName      string
-	elapsed       t.Duration
-	nodes         int
-	ways          int
-	multipolygons int
+	fileName string
+	elapsed  t.Duration
+	nodes    int
+	ways     int
+	relation int
 }
 
 func parseNode(elem Element, err error, out *os.File, buildingType string, count *int) (error, bool) {
@@ -124,11 +124,11 @@ func parseFile(inDir, outDir, fileName string) ParseResult {
 
 	end := t.Now()
 	return ParseResult{
-		fileName:      fileName,
-		elapsed:       end.Sub(start),
-		nodes:         countNode,
-		ways:          countWay,
-		multipolygons: countMulti,
+		fileName: fileName,
+		elapsed:  end.Sub(start),
+		nodes:    countNode,
+		ways:     countWay,
+		relation: countMulti,
 	}
 }
 

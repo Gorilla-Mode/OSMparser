@@ -54,9 +54,9 @@ func printResults(results []ParseResult) {
 			prefix = "└─"
 			connector = "\t"
 		}
-		fmt.Printf("\t%s Parsed file %s in %s\n\t%s├── nodes: %s%d%s\n\t%s├── way(s): %s%d%s\n\t%s└── multipolygon(s): %s%d%s\n",
+		fmt.Printf("\t%s Parsed file %s in %s\n\t%s├── nodes: %s%d%s\n\t%s├── way(s): %s%d%s\n\t%s└── relation(s): %s%d%s\n",
 			prefix, result.fileName, result.elapsed, connector, ansi[Green], result.nodes, ansi[Reset],
-			connector, ansi[Green], result.ways, ansi[Reset], connector, ansi[Green], result.multipolygons, ansi[Reset])
+			connector, ansi[Green], result.ways, ansi[Reset], connector, ansi[Green], result.relation, ansi[Reset])
 	}
 }
 
